@@ -357,9 +357,9 @@
   /* ---- streak pulse ---- */
   .badge-pill.pulse{animation:pulseGlow .8s ease;}
   @keyframes pulseGlow{
-    0%{box-shadow:0 0 0 0 rgba(222,154,60,.6);}
-    70%{box-shadow:0 0 0 10px rgba(222,154,60,0);}
-    100%{box-shadow:0 0 0 0 rgba(222,154,60,0);}
+    0%{box-shadow:0 0 0 0 rgba(47,111,237,.6);}
+    70%{box-shadow:0 0 0 10px rgba(47,111,237,0);}
+    100%{box-shadow:0 0 0 0 rgba(47,111,237,0);}
   }
 
   /* ---- skeleton shimmer ---- */
@@ -403,12 +403,12 @@
     aspect-ratio:1;border-radius:3px;background:var(--paper-2);
     border:1px solid var(--line);
   }
-  .heat-1{background:#F0D9AC;border-color:#F0D9AC;}
-  .heat-2{background:#E8B968;border-color:#E8B968;}
+  .heat-1{background:#C9DCFA;border-color:#C9DCFA;}
+  .heat-2{background:#8FB4F2;border-color:#8FB4F2;}
   .heat-3{background:var(--amber);border-color:var(--amber);}
-  .heat-4{background:var(--teal);border-color:var(--teal);}
-  [data-theme="dark"] .heat-1{background:#4A3A20;border-color:#4A3A20;}
-  [data-theme="dark"] .heat-2{background:#7A5A28;border-color:#7A5A28;}
+  .heat-4{background:var(--ink);border-color:var(--ink);}
+  [data-theme="dark"] .heat-1{background:#1E3560;border-color:#1E3560;}
+  [data-theme="dark"] .heat-2{background:#2A4A85;border-color:#2A4A85;}
 
   /* ---- achievement badges ---- */
   .badge-grid{
@@ -518,4 +518,724 @@
 
     <!-- SOLVE EXAM -->
     <section class="panel" id="panel-solve">
-      <p class="lede">Upload an exam PDF or paste questions. KARMA breaks each one down step by step and gives a clear final a
+      <p class="lede">Upload an exam PDF or paste questions. KARMA breaks each one down step by step and gives a clear final answer.</p>
+
+      <div class="card">
+        <div class="field">
+          <label>Upload exam PDF (optional)</label>
+          <div class="file-drop" id="solveDrop">
+            <div>Tap to choose a PDF</div>
+            <div class="fname" id="solveFname"></div>
+            <input type="file" id="solveFile" accept="application/pdf">
+          </div>
+          <div id="solvePages" class="pages-select"></div>
+        </div>
+
+        <div class="field">
+          <label>Or paste / edit the question text</label>
+          <textarea id="solveText" placeholder="Paste exam questions here, or extract from a PDF above..."></textarea>
+        </div>
+
+        <button class="btn btn-primary" id="solveBtn">
+          <span id="solveBtnLabel">Solve step by step</span>
+        </button>
+        <div class="status" id="solveStatus"></div>
+        <div class="error" id="solveError"></div>
+      </div>
+
+      <div id="solveResultWrap"></div>
+    </section>
+
+    <!-- STUDY COACH -->
+    <section class="panel" id="panel-learn">
+      <p class="lede">Pick a course or topic and KARMA will teach it like a patient tutor — explaining ideas, giving examples, and checking your understanding.</p>
+
+      <div class="card">
+        <div class="field">
+          <label>What course or topic do you want to study?</label>
+          <input type="text" id="courseInput" placeholder="e.g. Organic Chemistry — reaction mechanisms">
+        </div>
+        <button class="btn btn-primary" id="startCoach">Start studying</button>
+      </div>
+
+      <div class="card" id="coachChatCard" style="display:none;">
+        <div class="chat-box" id="chatBox"></div>
+        <div class="chat-input-row">
+          <textarea id="chatInput" placeholder="Ask a question, or say 'explain it again' or 'quiz me'..."></textarea>
+          <button class="btn btn-primary" id="chatSend">Send</button>
+        </div>
+        <div class="status" id="chatStatus"></div>
+      </div>
+    </section>
+
+    <!-- QUIZ FROM NOTES -->
+    <section class="panel" id="panel-quiz">
+      <p class="lede">Upload your lecture notes and KARMA will write practice questions from them, then mark you as you go.</p>
+
+      <div class="card" id="quizSetupCard">
+        <div class="field">
+          <label>Upload your notes PDF</label>
+          <div class="file-drop" id="quizDrop">
+            <div>Tap to choose a PDF</div>
+            <div class="fname" id="quizFname"></div>
+            <input type="file" id="quizFile" accept="application/pdf">
+          </div>
+          <div id="quizPages" class="pages-select"></div>
+        </div>
+        <button class="btn btn-primary" id="quizGenBtn" disabled>
+          <span id="quizGenLabel">Generate quiz</span>
+        </button>
+        <div class="status" id="quizStatus"></div>
+        <div class="error" id="quizError"></div>
+      </div>
+
+      <div class="card" id="quizPlayCard" style="display:none;"></div>
+    </section>
+
+    <!-- PROGRESS -->
+    <section class="panel" id="panel-progress">
+      <p class="lede">Everything you've solved, studied, and quizzed yourself on — saved right here.</p>
+
+      <div class="stat-row">
+        <div class="stat"><div class="num" id="statExams">0</div><div class="lbl">Exams solved</div></div>
+        <div class="stat"><div class="num" id="statQuizzes">0</div><div class="lbl">Quizzes taken</div></div>
+        <div class="stat"><div class="num" id="statSessions">0</div><div class="lbl">Coach sessions</div></div>
+      </div>
+      <div class="stat-row" style="margin-top:0;">
+        <div class="stat"><div class="num" id="statStreak">0</div><div class="lbl">Day streak</div></div>
+        <div class="stat"><div class="num" id="statXp">0</div><div class="lbl">Total XP</div></div>
+        <div class="stat"><div class="num" id="statLevel">1</div><div class="lbl">Level</div></div>
+      </div>
+
+      <div class="card heatmap-wrap">
+        <h3 style="margin-bottom:14px;">Last 33 days</h3>
+        <div class="heatmap" id="heatmapGrid"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom:4px;">Achievements</h3>
+        <div class="badge-grid" id="badgeGrid"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom:6px;">Recent activity</h3>
+        <div id="activityList"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-rule"></div>
+    <p class="footer-brand">KARMA</p>
+    <p class="footer-line">Created by Oyetade Fareed Ayoola</p>
+  </footer>
+</div>
+
+<script>
+/* ---------------- PDF.js setup ---------------- */
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+async function extractPdfPages(file){
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data: buf}).promise;
+  const pages = [];
+  for(let i=1;i<=pdf.numPages;i++){
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    pages.push(content.items.map(it=>it.str).join(' '));
+  }
+  return pages;
+}
+
+/* ---------------- Claude API helper ---------------- */
+async function askClaude(messages, system){
+  const res = await fetch("/api/ask", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ messages, system })
+  });
+  const data = await res.json();
+  if(!res.ok){
+    throw new Error(data.error || "The AI request failed. Try again in a moment.");
+  }
+  return { text: (data.text || "").trim() };
+}
+
+/* ---------------- tiny markdown renderer ---------------- */
+function renderMd(md){
+  let html = md
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.*)$/gm, '<h4>$1</h4>')
+    .replace(/^## (.*)$/gm, '<h4>$1</h4>')
+    .replace(/^# (.*)$/gm, '<h4>$1</h4>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>');
+  // numbered lists
+  html = html.replace(/(^\d+\.\s.*(\n\d+\.\s.*)*)/gm, m => {
+    const items = m.split('\n').map(l => l.replace(/^\d+\.\s/, '').trim()).filter(Boolean);
+    return '<ol>' + items.map(i => `<li>${i}</li>`).join('') + '</ol>';
+  });
+  // bullet lists
+  html = html.replace(/(^-\s.*(\n-\s.*)*)/gm, m => {
+    const items = m.split('\n').map(l => l.replace(/^-\s/, '').trim()).filter(Boolean);
+    return '<ul>' + items.map(i => `<li>${i}</li>`).join('') + '</ul>';
+  });
+  // paragraphs: wrap remaining lines
+  html = html.split('\n\n').map(block => {
+    if(/^<(h4|ol|ul)/.test(block.trim())) return block;
+    if(!block.trim()) return '';
+    return '<p>' + block.replace(/\n/g,'<br>') + '</p>';
+  }).join('');
+  return html;
+}
+
+/* ---------------- storage ---------------- */
+const DEFAULT_DATA = { exams:0, quizzes:0, sessions:0, activity:[], xp:0, streak:0, lastActiveDate:null };
+
+async function loadProgress(){
+  try{
+    const raw = localStorage.getItem('karma-progress');
+    return raw ? JSON.parse(raw) : structuredClone(DEFAULT_DATA);
+  }catch(e){
+    return structuredClone(DEFAULT_DATA);
+  }
+}
+async function saveProgress(data){
+  try{
+    localStorage.setItem('karma-progress', JSON.stringify(data));
+  }catch(e){ console.error('save failed', e); }
+}
+function updateStreak(data){
+  const today = new Date().toDateString();
+  if(data.lastActiveDate === today){
+    // already counted today
+  }else{
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    data.streak = (data.lastActiveDate === yesterday) ? (data.streak || 0) + 1 : 1;
+    data.lastActiveDate = today;
+  }
+  return data;
+}
+
+async function logActivity(type, title, meta){
+  const data = await loadProgress();
+  const xpBefore = levelFromXp(data.xp || 0);
+  if(type === 'exam'){ data.exams++; data.xp = (data.xp||0) + 20; }
+  if(type === 'quiz'){ data.quizzes++; data.xp = (data.xp||0) + 25; }
+  if(type === 'session'){ data.sessions++; data.xp = (data.xp||0) + 10; }
+  updateStreak(data);
+  data.activity.unshift({type, title, meta, date: new Date().toISOString()});
+  data.activity = data.activity.slice(0, 25);
+  await saveProgress(data);
+  const xpAfter = levelFromXp(data.xp || 0);
+  if(xpAfter > xpBefore) triggerConfetti();
+  const streakPill = document.getElementById('streakNum').closest('.badge-pill');
+  document.getElementById('streakNum').textContent = data.streak || 0;
+  document.getElementById('levelNum').textContent = xpAfter;
+  if(streakPill){
+    streakPill.classList.add('pulse');
+    setTimeout(() => streakPill.classList.remove('pulse'), 850);
+  }
+  renderProgress();
+  renderHome();
+}
+
+/* ---------------- tabs ---------------- */
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  if(tab === 'progress') renderProgress();
+  if(tab === 'home') renderHome();
+}
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+document.querySelectorAll('.launch-card').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.goto));
+});
+
+/* ---------------- theme toggle ---------------- */
+const themeToggle = document.getElementById('themeToggle');
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  themeToggle.textContent = theme === 'dark' ? '☀' : '☽';
+  try{ localStorage.setItem('karma-theme', theme); }catch(e){}
+}
+(function initTheme(){
+  let saved = 'light';
+  try{ saved = localStorage.getItem('karma-theme') || 'light'; }catch(e){}
+  applyTheme(saved);
+})();
+themeToggle.addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+});
+
+/* ---------------- confetti ---------------- */
+function triggerConfetti(){
+  const colors = ['#2F6FED','#3E8FE0','#0F2A5C','#5B9BF7'];
+  for(let i=0;i<28;i++){
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random()*100 + 'vw';
+    piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+    piece.style.animationDuration = (2 + Math.random()*1.4) + 's';
+    piece.style.opacity = String(0.7 + Math.random()*0.3);
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 3600);
+  }
+}
+
+/* ---------------- typing indicator ---------------- */
+function showTyping(container){
+  const el = document.createElement('div');
+  el.className = 'typing-msg';
+  el.id = 'typingIndicator';
+  el.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+  container.appendChild(el);
+  container.scrollTop = container.scrollHeight;
+}
+function hideTyping(){
+  const el = document.getElementById('typingIndicator');
+  if(el) el.remove();
+}
+
+/* ---------------- greeting ---------------- */
+function renderHome(){
+  const hour = new Date().getHours();
+  const greetEl = document.getElementById('greetText');
+  const subEl = document.getElementById('greetSub');
+  if(hour < 12) greetEl.textContent = 'Good morning';
+  else if(hour < 18) greetEl.textContent = 'Good afternoon';
+  else greetEl.textContent = 'Good evening';
+
+  renderStudyTip();
+  loadProgress().then(data => {
+    const xpIntoLevel = data.xp % 100;
+    subEl.textContent = data.streak > 1
+      ? `You're on a ${data.streak}-day streak — keep it going.`
+      : 'Ready to make today count?';
+    countUp(document.getElementById('dashStreak'), data.streak || 0);
+    countUp(document.getElementById('dashXp'), data.xp || 0);
+    countUp(document.getElementById('dashLevel'), levelFromXp(data.xp || 0));
+    document.getElementById('xpFill').style.width = xpIntoLevel + '%';
+    document.getElementById('xpCaption').textContent = `${xpIntoLevel} / 100 XP to level ${levelFromXp(data.xp||0)+1}`;
+    renderActivityInto('homeActivityList', data.activity.slice(0,5));
+  });
+}
+
+function levelFromXp(xp){ return Math.floor(xp/100) + 1; }
+
+/* ---------------- count-up animation ---------------- */
+function countUp(el, target, duration){
+  duration = duration || 650;
+  const start = parseInt(el.textContent, 10) || 0;
+  if(start === target){ el.textContent = target; return; }
+  const t0 = performance.now();
+  function tick(now){
+    const p = Math.min(1, (now - t0) / duration);
+    const eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(start + (target - start) * eased);
+    if(p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ---------------- subject color coding ---------------- */
+const SUBJECT_PALETTE = ['#2F6FED','#0EA5A5','#6366F1','#0F2A5C','#2563EB','#0891B2'];
+function subjectColor(str){
+  let hash = 0;
+  for(let i=0;i<str.length;i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  return SUBJECT_PALETTE[Math.abs(hash) % SUBJECT_PALETTE.length];
+}
+
+/* ---------------- rotating study tips ---------------- */
+const STUDY_TIPS = [
+  "Little and often beats a single long cram session.",
+  "Explaining a concept out loud is the fastest way to find the gap in your understanding.",
+  "Test yourself before you feel ready — recall beats re-reading.",
+  "A short walk between study blocks helps ideas actually stick.",
+  "Group similar problems together; your brain learns patterns faster that way.",
+  "Sleep is part of studying — it's when your memory consolidates.",
+  "Teach it to someone (even an imaginary student) to see what you really know."
+];
+function renderStudyTip(){
+  const dayIndex = Math.floor(Date.now() / 86400000);
+  const tip = STUDY_TIPS[dayIndex % STUDY_TIPS.length];
+  const el = document.getElementById('studyTip');
+  if(el) el.textContent = tip;
+}
+
+/* ---------------- achievements ---------------- */
+const ACHIEVEMENTS = [
+  { id:'first-exam', icon:'\ud83d\udcdd', name:'First exam solved', check:d => d.exams >= 1 },
+  { id:'first-quiz', icon:'\ud83c\udfaf', name:'First quiz taken', check:d => d.quizzes >= 1 },
+  { id:'first-session', icon:'\ud83d\udcac', name:'First study session', check:d => d.sessions >= 1 },
+  { id:'streak-3', icon:'\ud83d\udd25', name:'3-day streak', check:d => (d.streak||0) >= 3 },
+  { id:'streak-7', icon:'\u26a1', name:'7-day streak', check:d => (d.streak||0) >= 7 },
+  { id:'level-5', icon:'\ud83c\udf1f', name:'Reached level 5', check:d => levelFromXp(d.xp||0) >= 5 },
+];
+function renderAchievements(data){
+  const grid = document.getElementById('badgeGrid');
+  if(!grid) return;
+  grid.innerHTML = ACHIEVEMENTS.map(a => {
+    const unlocked = a.check(data);
+    return `<div class="achv ${unlocked ? 'unlocked' : 'locked'}">
+      <span class="achv-icon">${a.icon}</span>
+      <span class="achv-name">${a.name}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ---------------- streak heatmap ---------------- */
+function renderHeatmap(activity){
+  const grid = document.getElementById('heatmapGrid');
+  if(!grid) return;
+  const counts = {};
+  activity.forEach(a => {
+    const key = new Date(a.date).toDateString();
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  const days = [];
+  for(let i=32;i>=0;i--){
+    const d = new Date(Date.now() - i*86400000);
+    days.push(d.toDateString());
+  }
+  grid.innerHTML = days.map(key => {
+    const c = counts[key] || 0;
+    const level = c === 0 ? 0 : c === 1 ? 1 : c === 2 ? 2 : c <= 4 ? 3 : 4;
+    return `<div class="heat-cell${level ? ' heat-' + level : ''}" title="${key}: ${c} activit${c===1?'y':'ies'}"></div>`;
+  }).join('');
+}
+
+
+/* ---------------- SOLVE EXAM ---------------- */
+let solvePagesData = [];
+let solveSelected = new Set();
+
+document.getElementById('solveDrop').addEventListener('click', () => document.getElementById('solveFile').click());
+document.getElementById('solveFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  document.getElementById('solveFname').textContent = file.name;
+  document.getElementById('solveStatus').innerHTML = 'Reading PDF...<div class="skeleton-bar"></div>';
+  try{
+    solvePagesData = await extractPdfPages(file);
+    solveSelected = new Set(solvePagesData.map((_,i)=>i).slice(0, Math.min(2, solvePagesData.length)));
+    renderPageChips('solvePages', solvePagesData, solveSelected, syncSolveText);
+    syncSolveText();
+    document.getElementById('solveStatus').textContent = solvePagesData.length + ' page(s) found. Select which pages to use below.';
+  }catch(err){
+    document.getElementById('solveStatus').textContent = '';
+    document.getElementById('solveError').textContent = "Couldn't read that PDF. Try pasting the text instead.";
+  }
+});
+
+function renderPageChips(containerId, pages, selectedSet, onChange){
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  pages.forEach((_, i) => {
+    const chip = document.createElement('button');
+    chip.className = 'page-chip' + (selectedSet.has(i) ? ' on' : '');
+    chip.textContent = 'Page ' + (i+1);
+    chip.addEventListener('click', () => {
+      if(selectedSet.has(i)) selectedSet.delete(i); else selectedSet.add(i);
+      chip.classList.toggle('on');
+      onChange();
+    });
+    el.appendChild(chip);
+  });
+}
+
+function syncSolveText(){
+  const text = [...solveSelected].sort((a,b)=>a-b).map(i => solvePagesData[i]).join('\n\n');
+  document.getElementById('solveText').value = text.slice(0, 6000);
+}
+
+document.getElementById('solveBtn').addEventListener('click', async () => {
+  const text = document.getElementById('solveText').value.trim();
+  const errEl = document.getElementById('solveError');
+  const statusEl = document.getElementById('solveStatus');
+  errEl.textContent = '';
+  if(!text){ errEl.textContent = 'Paste some questions or upload a PDF first.'; return; }
+
+  const btn = document.getElementById('solveBtn');
+  btn.disabled = true;
+  document.getElementById('solveBtnLabel').innerHTML = '<span class="spinner"></span> Solving...';
+  statusEl.textContent = '';
+
+  try{
+    const { text: answer } = await askClaude(
+      [{ role: "user", content: text.slice(0,6000) }],
+      "You are a university exam tutor. Solve each question in the given text step by step: restate the question briefly, show full working/reasoning, and end each with a clearly labeled final answer. Use markdown with short headers per question and numbered steps. Keep explanations focused and exam-relevant."
+    );
+    const wrap = document.getElementById('solveResultWrap');
+    const box = document.createElement('div');
+    box.className = 'answer';
+    box.innerHTML = renderMd(answer);
+    wrap.prepend(box);
+    logActivity('exam', text.split('\n')[0].slice(0,60) || 'Exam question set', '');
+  }catch(err){
+    errEl.textContent = err.message;
+  }finally{
+    btn.disabled = false;
+    document.getElementById('solveBtnLabel').textContent = 'Solve step by step';
+  }
+});
+
+/* ---------------- STUDY COACH ---------------- */
+let coachHistory = [];
+let currentCourse = '';
+
+document.getElementById('startCoach').addEventListener('click', async () => {
+  const course = document.getElementById('courseInput').value.trim();
+  if(!course) return;
+  currentCourse = course;
+  coachHistory = [];
+  document.getElementById('coachChatCard').style.display = 'block';
+  document.getElementById('chatBox').innerHTML = '';
+  await sendCoachMessage(`I'm studying ${course}. Please introduce the topic briefly and ask me what I'd like to start with.`, true);
+  logActivity('session', course, '');
+});
+
+document.getElementById('chatSend').addEventListener('click', () => {
+  const input = document.getElementById('chatInput');
+  const val = input.value.trim();
+  if(!val) return;
+  input.value = '';
+  sendCoachMessage(val, false);
+});
+document.getElementById('chatInput').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    document.getElementById('chatSend').click();
+  }
+});
+
+async function sendCoachMessage(userText, silent){
+  const chatBox = document.getElementById('chatBox');
+  const statusEl = document.getElementById('chatStatus');
+
+  if(!silent){
+    const userMsg = document.createElement('div');
+    userMsg.className = 'msg user';
+    userMsg.textContent = userText;
+    chatBox.appendChild(userMsg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  coachHistory.push({ role: "user", content: userText });
+  showTyping(chatBox);
+
+  try{
+    const { text } = await askClaude(
+      coachHistory,
+      `You are a warm, encouraging university-level tutor teaching the course/topic: "${currentCourse}". Explain concepts clearly with concrete examples, break down anything complex into digestible pieces, and occasionally check the student's understanding with a short question. Keep responses focused and not overly long.`
+    );
+    coachHistory.push({ role: "assistant", content: text });
+
+    hideTyping();
+    const botMsg = document.createElement('div');
+    botMsg.className = 'msg bot';
+    botMsg.innerHTML = renderMd(text);
+    chatBox.appendChild(botMsg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    statusEl.textContent = '';
+  }catch(err){
+    hideTyping();
+    statusEl.textContent = '';
+    const errMsg = document.createElement('div');
+    errMsg.className = 'msg bot';
+    errMsg.textContent = "Sorry, I couldn't respond just now. Try again.";
+    chatBox.appendChild(errMsg);
+  }
+}
+
+/* ---------------- QUIZ FROM NOTES ---------------- */
+let quizPagesData = [];
+let quizSelected = new Set();
+
+document.getElementById('quizDrop').addEventListener('click', () => document.getElementById('quizFile').click());
+document.getElementById('quizFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  document.getElementById('quizFname').textContent = file.name;
+  document.getElementById('quizStatus').innerHTML = 'Reading PDF...<div class="skeleton-bar"></div>';
+  document.getElementById('quizGenBtn').disabled = true;
+  try{
+    quizPagesData = await extractPdfPages(file);
+    quizSelected = new Set(quizPagesData.map((_,i)=>i).slice(0, Math.min(3, quizPagesData.length)));
+    renderPageChips('quizPages', quizPagesData, quizSelected, ()=>{});
+    document.getElementById('quizStatus').textContent = quizPagesData.length + ' page(s) found. Select which pages to quiz on.';
+    document.getElementById('quizGenBtn').disabled = false;
+  }catch(err){
+    document.getElementById('quizStatus').textContent = '';
+    document.getElementById('quizError').textContent = "Couldn't read that PDF.";
+  }
+});
+
+document.getElementById('quizGenBtn').addEventListener('click', async () => {
+  const errEl = document.getElementById('quizError');
+  const statusEl = document.getElementById('quizStatus');
+  errEl.textContent = '';
+  const noteText = [...quizSelected].sort((a,b)=>a-b).map(i => quizPagesData[i]).join('\n\n').slice(0,6000);
+  if(!noteText.trim()){ errEl.textContent = 'Upload a notes PDF and select at least one page.'; return; }
+
+  const btn = document.getElementById('quizGenBtn');
+  btn.disabled = true;
+  document.getElementById('quizGenLabel').innerHTML = '<span class="spinner"></span> Writing questions...';
+
+  try{
+    const { text } = await askClaude(
+      [{ role: "user", content: noteText }],
+      "You are a university quiz writer. Based only on the notes given, write exactly 4 multiple-choice questions that test understanding of the material. Respond with ONLY valid JSON, no preamble, no markdown fences, in this exact shape: {\"questions\":[{\"question\":\"...\",\"options\":[\"...\",\"...\",\"...\",\"...\"],\"answerIndex\":0,\"explanation\":\"...\"}]}"
+    );
+    let cleaned = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+    if(!parsed.questions || !parsed.questions.length) throw new Error('empty');
+    startQuiz(parsed.questions);
+    statusEl.textContent = '';
+  }catch(err){
+    errEl.textContent = "Couldn't generate a quiz from that. Try selecting fewer, more content-rich pages.";
+  }finally{
+    btn.disabled = false;
+    document.getElementById('quizGenLabel').textContent = 'Generate quiz';
+  }
+});
+
+let quizState = null;
+
+function startQuiz(questions){
+  quizState = { questions, current: 0, correct: 0, answered: false };
+  document.getElementById('quizSetupCard').style.display = 'none';
+  const card = document.getElementById('quizPlayCard');
+  card.style.display = 'block';
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion(){
+  const card = document.getElementById('quizPlayCard');
+  const q = quizState.questions[quizState.current];
+  quizState.answered = false;
+  card.classList.remove('quiz-flip');
+  void card.offsetWidth;
+  card.classList.add('quiz-flip');
+  card.innerHTML = `
+    <div class="quiz-progress">Question ${quizState.current + 1} of ${quizState.questions.length}</div>
+    <div class="quiz-q">${q.question}</div>
+    <div id="quizOpts"></div>
+    <div id="quizExplainWrap"></div>
+  `;
+  const optsEl = document.getElementById('quizOpts');
+  q.options.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'quiz-opt';
+    b.textContent = opt;
+    b.addEventListener('click', () => selectQuizAnswer(i));
+    optsEl.appendChild(b);
+  });
+}
+
+function selectQuizAnswer(i){
+  if(quizState.answered) return;
+  quizState.answered = true;
+  const q = quizState.questions[quizState.current];
+  const opts = document.querySelectorAll('#quizOpts .quiz-opt');
+  opts.forEach((el, idx) => {
+    el.disabled = true;
+    if(idx === q.answerIndex) el.classList.add('correct');
+    else if(idx === i) el.classList.add('incorrect');
+  });
+  if(i === q.answerIndex) quizState.correct++;
+
+  const explainWrap = document.getElementById('quizExplainWrap');
+  explainWrap.innerHTML = `<div class="quiz-explain">${q.explanation || ''}</div>`;
+
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'btn btn-primary';
+  nextBtn.style.marginTop = '16px';
+  nextBtn.textContent = quizState.current < quizState.questions.length - 1 ? 'Next question' : 'Finish quiz';
+  nextBtn.addEventListener('click', () => {
+    if(quizState.current < quizState.questions.length - 1){
+      quizState.current++;
+      renderQuizQuestion();
+    }else{
+      finishQuiz();
+    }
+  });
+  explainWrap.appendChild(nextBtn);
+}
+
+function finishQuiz(){
+  const card = document.getElementById('quizPlayCard');
+  const score = quizState.correct;
+  const total = quizState.questions.length;
+  if(score === total) triggerConfetti();
+  card.innerHTML = `
+    <h3 style="margin-bottom:10px;">Quiz complete</h3>
+    <p style="color:var(--ink-soft);margin-bottom:18px;">You scored ${score} out of ${total}.</p>
+    <button class="btn btn-ghost" id="quizAgain">Quiz another set of notes</button>
+  `;
+  document.getElementById('quizAgain').addEventListener('click', () => {
+    card.style.display = 'none';
+    document.getElementById('quizSetupCard').style.display = 'block';
+    document.getElementById('quizFname').textContent = '';
+    document.getElementById('quizPages').innerHTML = '';
+    document.getElementById('quizGenBtn').disabled = true;
+  });
+  logActivity('quiz', `Quiz — ${score}/${total} correct`, '');
+}
+
+/* ---------------- PROGRESS ---------------- */
+function renderActivityInto(containerId, items){
+  const list = document.getElementById(containerId);
+  if(!items.length){
+    list.innerHTML = `<div class="empty-illustration">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 16c12-6 20-6 24 0v32c-4-6-12-6-24 0V16z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M56 16c-12-6-20-6-24 0v32c4-6 12-6 24 0V16z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+      </svg>
+      <p>Nothing yet — solve an exam, study a topic, or take a quiz to see it here.</p>
+    </div>`;
+    return;
+  }
+  list.innerHTML = items.map(a => {
+    const icon = a.type === 'exam' ? 'Exam' : a.type === 'quiz' ? 'Quiz' : 'Study';
+    const d = new Date(a.date);
+    const when = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    const color = subjectColor(a.title || a.type);
+    return `<div class="activity">
+      <div class="a-left">
+        <span class="subject-dot" style="background:${color}"></span>
+        <div>
+          <div class="a-title">${a.title}</div>
+          <div class="a-meta">${icon} · ${when}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function renderProgress(){
+  const data = await loadProgress();
+  countUp(document.getElementById('statExams'), data.exams);
+  countUp(document.getElementById('statQuizzes'), data.quizzes);
+  countUp(document.getElementById('statSessions'), data.sessions);
+  countUp(document.getElementById('statStreak'), data.streak || 0);
+  countUp(document.getElementById('statXp'), data.xp || 0);
+  countUp(document.getElementById('statLevel'), levelFromXp(data.xp || 0));
+  document.getElementById('streakNum').textContent = data.streak || 0;
+  document.getElementById('levelNum').textContent = levelFromXp(data.xp || 0);
+  renderActivityInto('activityList', data.activity);
+  renderHeatmap(data.activity);
+  renderAchievements(data);
+}
+
+renderProgress();
+renderHome();
+renderStudyTip();
+</script>
+</body>
+</html>
