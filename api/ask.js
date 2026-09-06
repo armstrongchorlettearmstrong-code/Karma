@@ -1,6 +1,25 @@
 // KARMA backend — proxies requests to Gemini so the API key never
 // reaches the browser. Deployed as a Vercel serverless function.
 
+const MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-flash-latest'];
+const RETRY_DELAYS_MS = [0, 800, 1800]; // waits before each attempt
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function callGemini(apiKey, body, model) {
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }
+  );
+  return res;
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
@@ -33,23 +52,27 @@ module.exports = async function handler(req, res) {
       body.systemInstruction = { parts: [{ text: system }] };
     }
 
-    console.log('KARMA: calling Gemini, message count =', messages.length);
+    let geminiRes, lastDetail;
+    for (let i = 0; i < MODELS.length; i++) {
+      if (RETRY_DELAYS_MS[i]) await sleep(RETRY_DELAYS_MS[i]);
+      console.log('KARMA: attempt', i + 1, 'using model', MODELS[i]);
+      geminiRes = await callGemini(apiKey, body, MODELS[i]);
+      console.log('KARMA: Gemini responded with status', geminiRes.status);
 
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      }
-    );
+      if (geminiRes.ok) break;
 
-    console.log('KARMA: Gemini responded with status', geminiRes.status);
+      lastDetail = await geminiRes.text();
+      console.error('KARMA: Gemini error on attempt', i + 1, ':', lastDetail);
+
+      // Only retry on overload/unavailable errors; anything else, fail fast.
+      if (geminiRes.status !== 503 && geminiRes.status !== 429) break;
+    }
 
     if (!geminiRes.ok) {
-      const detail = await geminiRes.text();
-      console.error('KARMA: Gemini error detail:', detail);
-      res.status(geminiRes.status).json({ error: 'The AI service returned an error.', detail });
+      res.status(503).json({
+        error: "KARMA's AI is getting a lot of demand right now. Please wait a few seconds and try again.",
+        detail: lastDetail
+      });
       return;
     }
 
