@@ -1,7 +1,7 @@
 // KARMA backend — proxies requests to Gemini so the API key never
 // reaches the browser. Deployed as a Vercel serverless function.
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
