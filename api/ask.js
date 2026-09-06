@@ -33,6 +33,8 @@ module.exports = async function handler(req, res) {
       body.systemInstruction = { parts: [{ text: system }] };
     }
 
+    console.log('KARMA: calling Gemini, message count =', messages.length);
+
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
       {
@@ -42,8 +44,11 @@ module.exports = async function handler(req, res) {
       }
     );
 
+    console.log('KARMA: Gemini responded with status', geminiRes.status);
+
     if (!geminiRes.ok) {
       const detail = await geminiRes.text();
+      console.error('KARMA: Gemini error detail:', detail);
       res.status(geminiRes.status).json({ error: 'The AI service returned an error.', detail });
       return;
     }
@@ -55,12 +60,14 @@ module.exports = async function handler(req, res) {
       : '';
 
     if (!text) {
+      console.error('KARMA: empty text, full response was:', JSON.stringify(data));
       res.status(502).json({ error: 'The AI returned an empty response. Try again.' });
       return;
     }
 
     res.status(200).json({ text });
   } catch (err) {
+    console.error('KARMA: caught exception:', err && err.stack ? err.stack : err);
     res.status(500).json({ error: err.message || 'Unexpected server error.' });
   }
 }
